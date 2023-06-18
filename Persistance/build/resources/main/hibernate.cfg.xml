@@ -18,5 +18,7 @@
 
         <mapping class="app.model.User"/>
         <mapping class="app.model.Configuration"/>
+        <mapping class="app.model.Move"/>
+        <mapping class="app.model.Game"/>
     </session-factory>
 </hibernate-configuration>
