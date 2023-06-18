@@ -1,5 +1,6 @@
 package app.client.gui;
 
+import app.model.Game;
 import app.model.User;
 import app.services.AppException;
 import javafx.fxml.FXML;
@@ -31,8 +32,11 @@ public class LoginController extends Controller{
             StartController startController = loader.getController();
 
             User user = services.login(username, password, startController);
+            Game game = services.startGameForUser(user.getId());
+
             startController.set(stage, services);
             startController.setUser(user);
+            startController.setGame(game);
 
             stage.setScene(startScene);
 

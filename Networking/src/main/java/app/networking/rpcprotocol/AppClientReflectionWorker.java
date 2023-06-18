@@ -1,7 +1,9 @@
 package app.networking.rpcprotocol;
 
+import app.model.Game;
 import app.model.User;
 import app.networking.dto.DtoUtils;
+import app.networking.dto.GameDto;
 import app.networking.dto.UserDto;
 import app.networking.rpcprotocol.request.Request;
 import app.networking.rpcprotocol.response.Response;
@@ -123,6 +125,20 @@ public class AppClientReflectionWorker implements Runnable, AppObserver {
             return okResponse;
         }
         catch (AppException ex){
+            return new Response.Builder().type(ResponseType.ERROR).data(ex.getMessage()).build();
+        }
+    }
+
+    private Response handleSTART_GAME_FOR_USER(Request request){
+        System.out.println("Handling start game for user!");
+        String playerIdString = request.data().toString();
+        Long playerID = Long.parseLong(playerIdString);
+        try{
+            Game game = server.startGameForUser(playerID);
+            GameDto gameDto = DtoUtils.getDto(game);
+            return new Response.Builder().type(ResponseType.OK).data(gameDto).build();
+        }
+        catch(AppException ex){
             return new Response.Builder().type(ResponseType.ERROR).data(ex.getMessage()).build();
         }
     }

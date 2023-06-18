@@ -1,7 +1,9 @@
 package app.networking.rpcprotocol;
 
+import app.model.Game;
 import app.model.User;
 import app.networking.dto.DtoUtils;
+import app.networking.dto.GameDto;
 import app.networking.dto.UserDto;
 import app.networking.rpcprotocol.request.Request;
 import app.networking.rpcprotocol.request.RequestType;
@@ -55,8 +57,8 @@ public class AppServerRpcProxy implements AppServices {
     }
 
     @Override
-    public void logout(Long playerID) throws AppException {
-        String idString = playerID.toString();
+    public void logout(Long userID) throws AppException {
+        String idString = userID.toString();
         Request request = new Request.Builder().type(RequestType.LOGOUT).data(idString).build();
         sendRequest(request);
         Response response = readResponse();
@@ -64,6 +66,24 @@ public class AppServerRpcProxy implements AppServices {
             String err = response.data().toString();
             throw new AppException(err);
         }
+    }
+
+    @Override
+    public Game startGameForUser(Long userID) throws AppException {
+        String idString = userID.toString();
+        Request request = new Request.Builder().type(RequestType.START_GAME_FOR_USER).data(idString).build();
+        sendRequest(request);
+        Response response = readResponse();
+        if(response.type() == ResponseType.OK){
+            GameDto gameDto = (GameDto) response.data();
+            Game game = DtoUtils.getFromDto(gameDto);
+            return game;
+        }
+        if(response.type() == ResponseType.ERROR){
+            String err = response.data().toString();
+            throw new AppException(err);
+        }
+        throw new AppException("Error while starting game for a user!");
     }
 
     private void initializeConnection() {

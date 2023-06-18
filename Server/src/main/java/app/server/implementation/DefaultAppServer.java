@@ -1,26 +1,39 @@
 package app.server.implementation;
 
+import app.model.Configuration;
+import app.model.Game;
 import app.model.User;
+import app.persistance.ConfigurationRepository;
+import app.persistance.GameRepository;
 import app.persistance.UserRepository;
 import app.persistance.utils.RepositoryException;
 import app.services.AppException;
 import app.services.AppObserver;
 import app.services.AppServices;
 
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DefaultAppServer implements AppServices {
 
     private UserRepository userRepository;
+    private ConfigurationRepository configurationRepository;
+    private GameRepository gameRepository;
 
     private Map<Long, AppObserver> loggedClients;
     private final int defaultThreadsNo = 5;
 
+    private Map<Long, Game> playersInGame;
 
-    public DefaultAppServer(UserRepository userRepository) {
+
+    public DefaultAppServer(UserRepository userRepository, ConfigurationRepository configurationRepository,
+                            GameRepository gameRepository) {
         this.userRepository = userRepository;
+        this.configurationRepository = configurationRepository;
+        this.gameRepository = gameRepository;
         loggedClients = new ConcurrentHashMap<>();
+        playersInGame = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -42,10 +55,35 @@ public class DefaultAppServer implements AppServices {
     }
 
     @Override
-    public void logout(Long playerID) throws AppException {
-        if(!loggedClients.containsKey(playerID)){
+    public void logout(Long userID) throws AppException {
+        if(!loggedClients.containsKey(userID)){
             throw new AppException("User is not logged in!");
         }
-        loggedClients.remove(playerID);
+        playersInGame.remove(userID);
+        loggedClients.remove(userID);
+    }
+
+    @Override
+    public Game startGameForUser(Long userID) throws AppException{
+        try {
+            Configuration configuration = configurationRepository.getRandomConfiguration();
+            User user = userRepository.get(userID);
+
+            Game game = new Game();
+            game.setUser(user);
+            game.setConfiguration(configuration);
+            game.setDate(LocalDate.now());
+            game.setFinished(false);
+            game.setWon(false);
+            Long gameID = gameRepository.save(game);
+            game.setId(gameID);
+
+            playersInGame.put(userID, game);
+
+            return game;
+        }
+        catch(RepositoryException exception){
+            throw new AppException(exception.getMessage());
+        }
     }
 }

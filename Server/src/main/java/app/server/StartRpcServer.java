@@ -2,7 +2,11 @@ package app.server;
 
 import app.networking.utils.AbstractServer;
 import app.networking.utils.RpcConcurrentServer;
+import app.persistance.ConfigurationRepository;
+import app.persistance.GameRepository;
 import app.persistance.UserRepository;
+import app.persistance.implementation.HibernateConfigurationRepository;
+import app.persistance.implementation.HibernateGameRepository;
 import app.persistance.implementation.HibernateUserRepository;
 import app.server.implementation.DefaultAppServer;
 import app.services.AppException;
@@ -30,8 +34,10 @@ public class StartRpcServer {
         }
 
         UserRepository userRepository = new HibernateUserRepository();
+        GameRepository gameRepository = new HibernateGameRepository();
+        ConfigurationRepository configurationRepository = new HibernateConfigurationRepository();
 
-        AppServices services = new DefaultAppServer(userRepository);
+        AppServices services = new DefaultAppServer(userRepository, configurationRepository, gameRepository);
 
         int serverPort = defaultPort;
         try{
