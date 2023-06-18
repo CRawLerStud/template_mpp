@@ -2,14 +2,19 @@ package app.rest;
 
 import app.model.Configuration;
 import app.model.Game;
+import app.model.Move;
 import app.model.User;
 import app.persistance.ConfigurationRepository;
 import app.persistance.GameRepository;
 import app.persistance.UserRepository;
 import app.persistance.utils.RepositoryException;
+import app.rest.dto.GameDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @CrossOrigin
 @RestController
@@ -52,7 +57,25 @@ public class UserController {
     @RequestMapping(value = "/{playerID}", method = RequestMethod.GET)
     public ResponseEntity<Object> getAllGamesForPlayer(@PathVariable Long playerID){
         try{
-            return ResponseEntity.ok(gameRepository.getAllGamesForPlayer(playerID).toArray(Game[]::new));
+            List<Game> games = gameRepository.getAllGamesForPlayer(playerID);
+            List<GameDto> gameDtos = new ArrayList<>();
+            for(Game game : games){
+                GameDto gameDto = new GameDto();
+                gameDto.setId(game.getId());
+                gameDto.setHint("");
+                if(game.getWon()) {
+                    gameDto.setHint(game.getConfiguration().getHint());
+                }
+                gameDto.setNoOfTries(game.getMoves().size());
+                List<Move> moves = game.getMoves();
+                List<Integer> positions = new ArrayList<>();
+                for(Move move : moves){
+                    positions.add(move.getPosition());
+                }
+                gameDto.setPositions(positions);
+                gameDtos.add(gameDto);
+            }
+            return ResponseEntity.ok(gameDtos);
         }
         catch(RepositoryException ex){
             return ResponseEntity.badRequest().body(ex.getMessage());

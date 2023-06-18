@@ -94,6 +94,14 @@ public class Game {
         this.date = date;
     }
 
+    public List<Move> getMoves() {
+        return moves;
+    }
+
+    public void setMoves(List<Move> moves) {
+        this.moves = moves;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -115,6 +123,7 @@ public class Game {
                 ", won=" + won +
                 ", finished=" + finished +
                 ", date=" + date +
+                ", moves=" + moves +
                 '}';
     }
 }
