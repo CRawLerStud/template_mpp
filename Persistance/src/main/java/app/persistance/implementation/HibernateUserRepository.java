@@ -5,7 +5,9 @@ import app.persistance.UserRepository;
 import app.persistance.utils.HibernateSession;
 import app.persistance.utils.RepositoryException;
 import org.hibernate.Session;
+import org.springframework.stereotype.Component;
 
+@Component
 public class HibernateUserRepository extends AbstractCrudRepository<Long, User> implements UserRepository {
 
     public HibernateUserRepository() {
