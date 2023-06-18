@@ -1,0 +1,9 @@
+rootProject.name = 'template_mpp'
+include 'Model'
+include 'Persistance'
+include 'Networking'
+include 'Services'
+include 'Server'
+include 'ClientFX'
+include 'RestAPI'
+
