@@ -17,5 +17,6 @@
         <property name="format_sql">true</property>
 
         <mapping class="app.model.User"/>
+        <mapping class="app.model.Configuration"/>
     </session-factory>
 </hibernate-configuration>
