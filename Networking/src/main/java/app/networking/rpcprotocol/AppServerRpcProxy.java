@@ -17,6 +17,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -86,6 +88,43 @@ public class AppServerRpcProxy implements AppServices {
         throw new AppException("Error while starting game for a user!");
     }
 
+    @Override
+    public Object sendMoveForUser(Long playerID, Integer position) throws AppException {
+        String data = playerID.toString() + "," + position.toString();
+        Request request = new Request.Builder().type(RequestType.SEND_MOVE_FOR_USER).data(data).build();
+        sendRequest(request);
+        Response response = readResponse();
+        if(response.type() == ResponseType.OK){
+            return response.data();
+        }
+        if(response.type() == ResponseType.ERROR){
+            String err = response.data().toString();
+            throw new AppException(err);
+        }
+        throw new AppException("Error while sending move for user!");
+    }
+
+    @Override
+    public List<Game> getGamesForConfiguration(Long configurationID) throws AppException {
+        String configurationIdString = configurationID.toString();
+        Request request = new Request.Builder().type(RequestType.GET_GAMES_FOR_CONFIGURATION).data(configurationIdString).build();
+        sendRequest(request);
+        Response response = readResponse();
+        if(response.type() == ResponseType.OK){
+            GameDto[] gameDtos = (GameDto[]) response.data();
+            List<Game> games = new ArrayList<>();
+            for(GameDto gameDto : gameDtos){
+                games.add(DtoUtils.getFromDto(gameDto));
+            }
+            return games;
+        }
+        if(response.type() == ResponseType.ERROR){
+            String err = response.data().toString();
+            throw new AppException(err);
+        }
+        throw new AppException("Error while getting games for configuration!");
+    }
+
     private void initializeConnection() {
         try{
             connection = new Socket(host, port);
@@ -142,10 +181,22 @@ public class AppServerRpcProxy implements AppServices {
         return response;
     }
 
-    private void handleUpdate(Response response){}
+    private void handleUpdate(Response response){
+        if(response.type() == ResponseType.FINISHED_GAME){
+            Game game = DtoUtils.getFromDto((GameDto) response.data());
+            try{
+                if(client != null){
+                    client.notifyFinishedGame(game);
+                }
+            }
+            catch(AppException ex){
+                ex.printStackTrace();
+            }
+        }
+    }
 
     private boolean isUpdate(Response response){
-        return false;
+        return response.type() == ResponseType.FINISHED_GAME;
     }
 
     private class ReaderThread implements Runnable {

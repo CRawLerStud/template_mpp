@@ -18,6 +18,8 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AppClientReflectionWorker implements Runnable, AppObserver {
 
@@ -143,5 +145,48 @@ public class AppClientReflectionWorker implements Runnable, AppObserver {
         }
     }
 
+    private Response handleSEND_MOVE_FOR_USER(Request request){
+        System.out.println("Handling send move for user!");
+        String[] data = request.data().toString().split(",");
+        Long playerID = Long.parseLong(data[0]);
+        Integer position = Integer.parseInt(data[1]);
+        try{
+            Object answer = server.sendMoveForUser(playerID, position);
+            return new Response.Builder().type(ResponseType.OK).data(answer).build();
+        }
+        catch(AppException ex){
+            return new Response.Builder().type(ResponseType.ERROR).data(ex.getMessage()).build();
+        }
+    }
 
+    private Response handleGET_GAMES_FOR_CONFIGURATION(Request request){
+        String configurationIDString = request.data().toString();
+        Long configurationID = Long.parseLong(configurationIDString);
+        try{
+            List<Game> games = server.getGamesForConfiguration(configurationID);
+            List<GameDto> gameDtos = new ArrayList<>();
+            for(Game game : games){
+                GameDto gameDto = DtoUtils.getDto(game);
+                gameDtos.add(gameDto);
+            }
+            GameDto[] gameData = gameDtos.toArray(GameDto[]::new);
+            return new Response.Builder().type(ResponseType.OK).data(gameData).build();
+        }
+        catch(AppException ex){
+            return new Response.Builder().type(ResponseType.ERROR).data(ex.getMessage()).build();
+        }
+    }
+
+    @Override
+    public void notifyFinishedGame(Game game) throws AppException {
+        System.out.println("Finished game update!");
+        GameDto gameDto = DtoUtils.getDto(game);
+        Response response = new Response.Builder().type(ResponseType.FINISHED_GAME).data(gameDto).build();
+        try{
+            sendResponse(response);
+        }
+        catch(IOException ex){
+            throw new AppException(ex.getMessage());
+        }
+    }
 }

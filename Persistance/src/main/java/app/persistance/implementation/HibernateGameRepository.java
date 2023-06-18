@@ -33,4 +33,20 @@ public class HibernateGameRepository extends AbstractCrudRepository<Long, Game> 
             throw new RepositoryException(ex.getMessage());
         }
     }
+
+    @Override
+    public List<Game> getAllGamesForConfiguration(Long configurationID) throws RepositoryException {
+        try(Session session = HibernateSession.getInstance().openSession()){
+            session.beginTransaction();
+            List<Game> games =
+                    session.createQuery("FROM Game G WHERE G.configuration.id = :configurationID AND G.finished = true")
+                            .setParameter("configurationID", configurationID)
+                            .getResultList();
+            session.getTransaction().commit();
+            return games;
+        }
+        catch(Exception ex){
+            throw new RepositoryException(ex.getMessage());
+        }
+    }
 }

@@ -37,6 +37,7 @@ public class DtoUtils {
         gameDto.setWon(game.getWon());
         gameDto.setFinished(game.getFinished());
         gameDto.setDate(game.getDate());
+        gameDto.setPoints(game.getPoints());
 
         return gameDto;
     }
@@ -61,6 +62,7 @@ public class DtoUtils {
         game.setWon(gameDto.getWon());
         game.setFinished(gameDto.getFinished());
         game.setDate(gameDto.getDate());
+        game.setPoints(gameDto.getPoints());
 
         return game;
     }

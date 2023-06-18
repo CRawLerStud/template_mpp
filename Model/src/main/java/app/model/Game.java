@@ -29,21 +29,25 @@ public class Game {
     @Column(name = "finished")
     private Boolean finished;
 
+    @Column(name = "points")
+    private Integer points;
+
     @Column(name = "date")
     private LocalDate date;
 
-    @OneToMany(mappedBy = "game", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "game")
     private List<Move> moves;
 
     public Game() {}
 
-    public Game(Long id, Configuration configuration, User user, Boolean won, Boolean finished, LocalDate date) {
+    public Game(Long id, Configuration configuration, User user, Boolean won, Boolean finished, LocalDate date, Integer points) {
         this.id = id;
         this.configuration = configuration;
         this.user = user;
         this.won = won;
         this.finished = finished;
         this.date = date;
+        this.points = points;
     }
 
     public Long getId() {
@@ -98,6 +102,14 @@ public class Game {
         return moves;
     }
 
+    public Integer getPoints() {
+        return points;
+    }
+
+    public void setPoints(Integer points) {
+        this.points = points;
+    }
+
     public void setMoves(List<Move> moves) {
         this.moves = moves;
     }
@@ -123,7 +135,6 @@ public class Game {
                 ", won=" + won +
                 ", finished=" + finished +
                 ", date=" + date +
-                ", moves=" + moves +
                 '}';
     }
 }

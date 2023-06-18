@@ -20,6 +20,8 @@ public class GameDto implements Serializable {
 
     private LocalDate date;
 
+    private Integer points;
+
     public GameDto() {}
 
     public String getId() {
@@ -100,5 +102,13 @@ public class GameDto implements Serializable {
 
     public void setDate(LocalDate date) {
         this.date = date;
+    }
+
+    public Integer getPoints() {
+        return points;
+    }
+
+    public void setPoints(Integer points) {
+        this.points = points;
     }
 }

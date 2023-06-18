@@ -1,5 +1,7 @@
 package app.services;
 
-public interface AppObserver {
+import app.model.Game;
 
+public interface AppObserver {
+    void notifyFinishedGame(Game game) throws AppException;
 }
