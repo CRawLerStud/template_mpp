@@ -19,5 +19,7 @@
         <mapping class="app.model.User"/>
         <mapping class="app.model.SecretWord"/>
         <mapping class="app.model.Game"/>
+        <mapping class="app.model.Round"/>
+        <mapping class="app.model.Answer"/>
     </session-factory>
 </hibernate-configuration>

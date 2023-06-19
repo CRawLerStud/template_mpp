@@ -17,6 +17,9 @@ public class Game {
     @OneToMany(mappedBy = "game")
     private List<SecretWord> words;
 
+    @OneToMany(mappedBy = "game")
+    private List<Round> rounds;
+
     public Game() {}
 
     public Long getId() {

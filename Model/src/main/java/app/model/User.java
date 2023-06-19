@@ -21,6 +21,9 @@ public class User {
     @OneToMany(mappedBy = "user")
     private List<SecretWord> words;
 
+    @OneToMany(mappedBy = "user")
+    private List<Answer> answers;
+
     public User() {}
 
     public Long getId() {
@@ -45,6 +48,22 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public List<SecretWord> getWords() {
+        return words;
+    }
+
+    public void setWords(List<SecretWord> words) {
+        this.words = words;
+    }
+
+    public List<Answer> getAnswers() {
+        return answers;
+    }
+
+    public void setAnswers(List<Answer> answers) {
+        this.answers = answers;
     }
 
     @Override
