@@ -66,6 +66,22 @@ public class AppServerRpcProxy implements AppServices {
         }
     }
 
+    @Override
+    public Integer setUserReady(Long userID, String word) throws AppException {
+        String data = userID.toString() + "," + word;
+        Request request = new Request.Builder().type(RequestType.SET_USER_READY).data(data).build();
+        sendRequest(request);
+        Response response = readResponse();
+        if(response.type() == ResponseType.OK){
+            return (Integer) response.data();
+        }
+        if(response.type() == ResponseType.ERROR){
+            String err = response.data().toString();
+            throw new AppException(err);
+        }
+        throw new AppException("Error while setting user ready!");
+    }
+
     private void initializeConnection() {
         try{
             connection = new Socket(host, port);
@@ -122,10 +138,23 @@ public class AppServerRpcProxy implements AppServices {
         return response;
     }
 
-    private void handleUpdate(Response response){}
+    private void handleUpdate(Response response){
+        if(ResponseType.USER_READY == response.type()){
+            System.out.println("Handling update user ready");
+            Integer size = (Integer) response.data();
+            if(client != null){
+                try {
+                    client.notifyUserReady(size);
+                }
+                catch(AppException ex){
+                    System.out.println("Error while handling user update!");
+                }
+            }
+        }
+    }
 
     private boolean isUpdate(Response response){
-        return false;
+        return ResponseType.USER_READY == response.type();
     }
 
     private class ReaderThread implements Runnable {

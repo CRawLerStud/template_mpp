@@ -40,6 +40,17 @@ public class AppClientReflectionWorker implements Runnable, AppObserver {
     }
 
     @Override
+    public void notifyUserReady(Integer noOfPlayersReady) throws AppException {
+        Response response = new Response.Builder().type(ResponseType.USER_READY).data(noOfPlayersReady).build();
+        try {
+            sendResponse(response);
+        }
+        catch(IOException ex){
+            System.out.println("Error while notifying user ready! ( REFLECTION WORKER )");
+        }
+    }
+
+    @Override
     public void run() {
         while(connected){
             try{
@@ -121,6 +132,20 @@ public class AppClientReflectionWorker implements Runnable, AppObserver {
         try{
             server.logout(playerID);
             return okResponse;
+        }
+        catch (AppException ex){
+            return new Response.Builder().type(ResponseType.ERROR).data(ex.getMessage()).build();
+        }
+    }
+
+    private Response handleSET_USER_READY(Request request){
+        System.out.println("Handling set user ready!");
+        String[] data = request.data().toString().split(",");
+        Long playerID = Long.parseLong(data[0]);
+        String word = data[1];
+        try{
+            Integer size = server.setUserReady(playerID, word);
+            return new Response.Builder().type(ResponseType.OK).data(size).build();
         }
         catch (AppException ex){
             return new Response.Builder().type(ResponseType.ERROR).data(ex.getMessage()).build();
