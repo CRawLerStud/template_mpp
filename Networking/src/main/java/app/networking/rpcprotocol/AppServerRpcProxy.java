@@ -1,7 +1,11 @@
 package app.networking.rpcprotocol;
 
+import app.model.Game;
+import app.model.SecretWord;
 import app.model.User;
 import app.networking.dto.DtoUtils;
+import app.networking.dto.GameDto;
+import app.networking.dto.SecretWordDto;
 import app.networking.dto.UserDto;
 import app.networking.rpcprotocol.request.Request;
 import app.networking.rpcprotocol.request.RequestType;
@@ -15,6 +19,8 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.net.Socket;
+import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
 
@@ -80,6 +86,40 @@ public class AppServerRpcProxy implements AppServices {
             throw new AppException(err);
         }
         throw new AppException("Error while setting user ready!");
+    }
+
+    @Override
+    public Game getGameInstanceForUser(Long userID) throws AppException{
+        Request request = new Request.Builder().type(RequestType.GAME_FOR_USER).data(userID).build();
+        sendRequest(request);
+        Response response = readResponse();
+        if(response.type() == ResponseType.OK){
+            GameDto gameDto = (GameDto) response.data();
+            return DtoUtils.getFromDto(gameDto);
+        }
+        if(response.type() == ResponseType.ERROR){
+            String err = response.data().toString();
+            throw new AppException(err);
+        }
+        throw new AppException("Error while getting game instance for a user!");
+    }
+
+    @Override
+    public List<SecretWord> getInformationForUserAndGame(Long userID, Long gameID) throws AppException {
+        String data = userID.toString() + "," + gameID.toString();
+        Request request = new Request.Builder().type(RequestType.GET_INFO_FOR_USER).data(data).build();
+        sendRequest(request);
+        Response response = readResponse();
+        if(response.type() == ResponseType.OK){
+            SecretWordDto[] secretWords = (SecretWordDto[]) response.data();
+            return Arrays.asList(secretWords).stream()
+                    .map(DtoUtils::getFromDto).toList();
+        }
+        if(response.type() == ResponseType.ERROR){
+            String err = response.data().toString();
+            throw new AppException(err);
+        }
+        throw new AppException("Error while getting information for user and game!");
     }
 
     private void initializeConnection() {

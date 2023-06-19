@@ -1,7 +1,11 @@
 package app.networking.rpcprotocol;
 
+import app.model.Game;
+import app.model.SecretWord;
 import app.model.User;
 import app.networking.dto.DtoUtils;
+import app.networking.dto.GameDto;
+import app.networking.dto.SecretWordDto;
 import app.networking.dto.UserDto;
 import app.networking.rpcprotocol.request.Request;
 import app.networking.rpcprotocol.response.Response;
@@ -16,6 +20,7 @@ import java.io.ObjectOutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.Socket;
+import java.util.List;
 
 public class AppClientReflectionWorker implements Runnable, AppObserver {
 
@@ -148,6 +153,36 @@ public class AppClientReflectionWorker implements Runnable, AppObserver {
             return new Response.Builder().type(ResponseType.OK).data(size).build();
         }
         catch (AppException ex){
+            return new Response.Builder().type(ResponseType.ERROR).data(ex.getMessage()).build();
+        }
+    }
+
+    private Response handleGAME_FOR_USER(Request request){
+        System.out.println("Handling game for user");
+        Long playerID = (Long) request.data();
+        try{
+            Game game = server.getGameInstanceForUser(playerID);
+            GameDto gameDto = DtoUtils.getDto(game);
+            return new Response.Builder().type(ResponseType.OK).data(gameDto).build();
+        }
+        catch(AppException ex){
+            return new Response.Builder().type(ResponseType.ERROR).data(ex.getMessage()).build();
+        }
+    }
+
+    private Response handleGET_INFO_FOR_USER(Request request){
+        System.out.println("Handling getting info for user");
+        String[] data = request.data().toString().split(",");
+        Long playerID = Long.parseLong(data[0]);
+        Long gameID = Long.parseLong(data[1]);
+        try{
+            List<SecretWord> words = server.getInformationForUserAndGame(playerID, gameID);
+            List<SecretWordDto> wordsDtos = words.stream()
+                    .map(DtoUtils::getDto).toList();
+            SecretWordDto[] finalWords = wordsDtos.toArray(SecretWordDto[]::new);
+            return new Response.Builder().type(ResponseType.OK).data(finalWords).build();
+        }
+        catch(AppException ex){
             return new Response.Builder().type(ResponseType.ERROR).data(ex.getMessage()).build();
         }
     }

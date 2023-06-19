@@ -8,4 +8,6 @@ import java.util.List;
 public interface SecretWordRepository extends CrudRepository<Long, SecretWord> {
 
     List<SecretWord> secretWordsForGame(Long gameID) throws RepositoryException;
+
+    List<SecretWord> getSecretWordsForUser(Long userID, Long gameID) throws RepositoryException;
 }

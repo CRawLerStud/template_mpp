@@ -1,13 +1,19 @@
 package app.client.gui;
 
+import app.model.Game;
 import app.model.User;
 import app.services.AppException;
 import app.services.AppObserver;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+
+import java.io.IOException;
 
 public class StartController extends Controller implements AppObserver {
     private User user;
@@ -38,10 +44,7 @@ public class StartController extends Controller implements AppObserver {
             return;
         }
         try{
-            Integer playersReady = services.setUserReady(user.getId(), word);
-            if(playersReady == 3){
-                //TODO: Start game logic for player
-            }
+            services.setUserReady(user.getId(), word);
         }
         catch(AppException ex){
             Alert alert = new Alert(Alert.AlertType.ERROR, ex.getMessage());
@@ -53,6 +56,28 @@ public class StartController extends Controller implements AppObserver {
     public void notifyUserReady(Integer noOfPlayersReady) throws AppException {
         Platform.runLater(() -> {
             playersReadyLabel.setText("Players Ready: " + noOfPlayersReady.toString());
+
+            try {
+                if (noOfPlayersReady == 3) {
+                    Game game = services.getGameInstanceForUser(user.getId());
+
+                    FXMLLoader loader = new FXMLLoader(getClass().getResource("/game.fxml"));
+                    Parent root = loader.load();
+                    Scene newScene = new Scene(root);
+
+                    GameController gameController = loader.getController();
+                    gameController.set(stage, services);
+                    gameController.setUser(user);
+                    gameController.setGame(game);
+
+                    stage.setScene(newScene);
+                }
+            }
+            catch(AppException | IOException ex){
+                Alert alert = new Alert(Alert.AlertType.ERROR, ex.getMessage());
+                alert.showAndWait();
+            }
+
         });
     }
 }

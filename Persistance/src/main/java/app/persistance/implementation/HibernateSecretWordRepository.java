@@ -31,4 +31,21 @@ public class HibernateSecretWordRepository extends AbstractCrudRepository<Long, 
             throw new RepositoryException(ex.getMessage());
         }
     }
+
+    @Override
+    public List<SecretWord> getSecretWordsForUser(Long userID, Long gameID) throws RepositoryException {
+        try(Session session = HibernateSession.getInstance().openSession()){
+            session.beginTransaction();
+            List<SecretWord> words =
+                    session.createQuery("FROM SecretWord S WHERE S.user.id != :userID AND S.game.id = :gameID")
+                            .setParameter("userID", userID)
+                            .setParameter("gameID", gameID)
+                            .getResultList();
+            session.getTransaction().commit();
+            return words;
+        }
+        catch(Exception ex){
+            throw new RepositoryException(ex.getMessage());
+        }
+    }
 }
